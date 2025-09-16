@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Virtual Classroom</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+    <!-- Join Form -->
+    <div class="join-form" id="joinForm">
+        <div class="join-form-header">
+            <h2>🎓 WebRTC Virtual Classroom</h2>
+            <p>Connect with up to 100 participants in real-time</p>
+        </div>
+
+        <div class="form-group">
+            <label for="roomId">Room ID</label>
+            <input type="text" id="roomId" placeholder="Enter room ID (e.g., classroom-101)" required>
+        </div>
+
+        <div class="form-group">
+            <label for="userName">Your Name</label>
+            <input type="text" id="userName" placeholder="Enter your name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="userRole">Your Role</label>
+            <select id="userRole">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="guest">Guest</option>
+            </select>
+        </div>
+
+        <button class="join-btn" onclick="joinRoom()">Join Classroom</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Connecting to classroom...</p>
+        </div>
+
+        <div class="quick-actions">
+            <button onclick="createQuickRoom()" class="quick-btn">Create Quick Room</button>
+            <button onclick="showHelp()" class="quick-btn">Help</button>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>🎓 Virtual Classroom</h1>
+                <div class="room-info">
+                    <span id="roomName">Room: Loading...</span>
+                    <span id="participantsCount">0 participants</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" onclick="toggleFullscreen()">⛶</button>
+                <button class="header-btn" onclick="showSettings()">⚙️</button>
+                <button class="header-btn danger" onclick="leaveRoom()">Leave</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Video Section -->
+            <div class="video-section">
+                <!-- Local Video -->
+                <div class="local-video-container">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <div class="local-video-overlay">
+                        <div class="local-video-label">You</div>
+                        <div class="local-video-controls">
+                            <button class="mini-btn" onclick="togglePiP()">📺</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="controls-panel">
+                    <div class="controls-group">
+                        <button class="control-btn video active" id="videoBtn" onclick="toggleVideo()" title="Toggle Video">
+                            <span class="btn-icon">📹</span>
+                            <span class="btn-text">Video</span>
+                        </button>
+                        <button class="control-btn audio active" id="audioBtn" onclick="toggleAudio()" title="Toggle Audio">
+                            <span class="btn-icon">🎤</span>
+                            <span class="btn-text">Audio</span>
+                        </button>
+                    </div>
+
+                    <div class="controls-group">
+                        <button class="control-btn screen" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">
+                            <span class="btn-icon">🖥️</span>
+                            <span class="btn-text">Share</span>
+                        </button>
+                        <button class="control-btn record" id="recordBtn" onclick="toggleRecording()" title="Record Session">
+                            <span class="btn-icon">⏺️</span>
+                            <span class="btn-text">Record</span>
+                        </button>
+                    </div>
+
+                    <div class="controls-group">
+                        <button class="control-btn whiteboard" onclick="toggleWhiteboard()" title="Whiteboard">
+                            <span class="btn-icon">📝</span>
+                            <span class="btn-text">Board</span>
+                        </button>
+                        <button class="control-btn files" onclick="toggleFileShare()" title="Share Files">
+                            <span class="btn-icon">📁</span>
+                            <span class="btn-text">Files</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remote Videos Grid -->
+                <div class="remote-videos" id="remoteVideos">
+                    <!-- Remote video elements will be added here dynamically -->
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <!-- Sidebar Tabs -->
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" onclick="switchTab('chat')" data-tab="chat">
+                        💬 Chat <span class="unread-badge" id="chatBadge">0</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('participants')" data-tab="participants">
+                        👥 People <span class="count-badge" id="peopleBadge">0</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('files')" data-tab="files">
+                        📁 Files <span class="count-badge" id="filesBadge">0</span>
+                    </button>
+                </div>
+
+                <!-- Chat Tab -->
+                <div class="tab-content active" id="chatTab">
+                    <div class="chat-header">
+                        <h3>Class Chat</h3>
+                        <div class="chat-controls">
+                            <button class="mini-btn" onclick="clearChat()" title="Clear Chat">🗑️</button>
+                            <button class="mini-btn" onclick="exportChat()" title="Export Chat">💾</button>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    <div class="chat-input-section">
+                        <div class="chat-input-container">
+                            <button class="file-share-btn" title="Share File">📎</button>
+                            <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+                            <button id="sendButton" title="Send Message">➤</button>
+                        </div>
+                        <div class="chat-features">
+                            <button class="feature-btn" onclick="insertEmoji()">😀</button>
+                            <button class="feature-btn" onclick="togglePrivateMode()">🔒</button>
+                            <span class="typing-indicator" id="typingIndicator"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participants Tab -->
+                <div class="tab-content" id="participantsTab">
+                    <div class="participants-header">
+                        <h3>Participants</h3>
+                        <div class="participants-controls">
+                            <button class="mini-btn" onclick="inviteParticipants()" title="Invite">➕</button>
+                            <button class="mini-btn" onclick="manageParticipants()" title="Manage">⚙️</button>
+                        </div>
+                    </div>
+                    <div class="participants-list" id="participantsList">
+                        <!-- Participants will be listed here -->
+                    </div>
+                </div>
+
+                <!-- Files Tab -->
+                <div class="tab-content" id="filesTab">
+                    <div class="files-header">
+                        <h3>Shared Files</h3>
+                        <div class="files-controls">
+                            <button class="mini-btn" onclick="uploadFile()" title="Upload">📤</button>
+                            <button class="mini-btn" onclick="clearFiles()" title="Clear">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="files-list" id="filesList">
+                        <!-- Shared files will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close" onclick="closeSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Video Quality</label>
+                    <select id="videoQuality">
+                        <option value="low">Low (480p)</option>
+                        <option value="medium" selected>Medium (720p)</option>
+                        <option value="high">High (1080p)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Audio Quality</label>
+                    <select id="audioQuality">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Notifications</label>
+                    <input type="checkbox" id="notifications" checked>
+                    <span>Enable sound notifications</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button class="btn-primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal" id="helpModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Help & Instructions</h3>
+                <button class="modal-close" onclick="closeHelp()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h4>Getting Started</h4>
+                    <ul>
+                        <li>Enter a room ID and your name to join</li>
+                        <li>Allow camera and microphone access when prompted</li>
+                        <li>Use controls to manage your audio/video</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4>Chat Commands</h4>
+                    <ul>
+                        <li><code>/private [userId] [message]</code> - Send private message</li>
+                        <li><code>/clear</code> - Clear your chat</li>
+                        <li><code>/help</code> - Show help in chat</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4>Keyboard Shortcuts</h4>
+                    <ul>
+                        <li><kbd>Ctrl+M</kbd> - Toggle microphone</li>
+                        <li><kbd>Ctrl+V</kbd> - Toggle video</li>
+                        <li><kbd>Ctrl+Enter</kbd> - Send chat message</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/webrtc-client.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
