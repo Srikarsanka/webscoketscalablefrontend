@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebRTC Virtual Classroom</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 </head>
+
 <body>
     <!-- Join Form -->
     <div class="join-form" id="joinForm">
@@ -83,22 +86,26 @@
                 <!-- Controls Panel -->
                 <div class="controls-panel">
                     <div class="controls-group">
-                        <button class="control-btn video active" id="videoBtn" onclick="toggleVideo()" title="Toggle Video">
+                        <button class="control-btn video active" id="videoBtn" onclick="toggleVideo()"
+                            title="Toggle Video">
                             <span class="btn-icon">📹</span>
                             <span class="btn-text">Video</span>
                         </button>
-                        <button class="control-btn audio active" id="audioBtn" onclick="toggleAudio()" title="Toggle Audio">
+                        <button class="control-btn audio active" id="audioBtn" onclick="toggleAudio()"
+                            title="Toggle Audio">
                             <span class="btn-icon">🎤</span>
                             <span class="btn-text">Audio</span>
                         </button>
                     </div>
 
                     <div class="controls-group">
-                        <button class="control-btn screen" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">
+                        <button class="control-btn screen" id="screenBtn" onclick="toggleScreenShare()"
+                            title="Share Screen">
                             <span class="btn-icon">🖥️</span>
                             <span class="btn-text">Share</span>
                         </button>
-                        <button class="control-btn record" id="recordBtn" onclick="toggleRecording()" title="Record Session">
+                        <button class="control-btn record" id="recordBtn" onclick="toggleRecording()"
+                            title="Record Session">
                             <span class="btn-icon">⏺️</span>
                             <span class="btn-text">Record</span>
                         </button>
@@ -268,9 +275,14 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Socket.io URL configuration
+        window.SOCKET_SERVER_URL = 'https://web-scoketscalable.onrender.com';
+    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/webrtc-client.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>
