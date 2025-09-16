@@ -152,16 +152,14 @@ class VirtualClassroom {
     try {
       // Connect to server
       // Configuration for WebRTC Virtual Classroom
-const config = {
-  development: {
-    SERVER_URL: 'http://localhost:3001',
-    API_BASE_URL: 'http://localhost:3001/api'
-  },
-  production: {
-    SERVER_URL: 'https://web-scoketscalable.onrender.com',
-    API_BASE_URL: 'https://web-scoketscalable.onrender.com/api'
-  }
-};
+// NEW CODE - Replace with this:
+this.socket = io(window.APP_CONFIG.SERVER_URL, {
+  transports: ['websocket', 'polling'],
+  timeout: 20000,
+  forceNew: false,
+  withCredentials: true
+});
+
 
 // Auto-detect environment
 const environment = window.location.hostname === 'localhost' ? 'development' : 'production';
